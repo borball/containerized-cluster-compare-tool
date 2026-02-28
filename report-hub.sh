@@ -11,7 +11,12 @@ if [ -z "$spoke" ]; then
   exit 1
 fi
 
-if [ $(oc get managedcluster.cluster.open-cluster-management.io  |grep $spoke | wc -l) -eq 1 ]; then
+if oc get managedcluster.cluster.open-cluster-management.io "$spoke" -o name &>/dev/null; then
+  state=$(oc get managedcluster.cluster.open-cluster-management.io "$spoke" -o jsonpath='{.status.conditions[?(@.type=="Available")].status}' 2>/dev/null || true)
+  if [[ "${state}" != "True" ]]; then
+    echo "Warning: skipping cluster $spoke — managed cluster is not available (status: ${state:-unknown})."
+    exit 0
+  fi
   oc get secret -n ${spoke} ${spoke}-admin-kubeconfig -o jsonpath={.data.kubeconfig} |base64 -d > kubeconfig-${spoke}.yaml
   export KUBECONFIG=kubeconfig-${spoke}.yaml
 
