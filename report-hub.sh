@@ -1,6 +1,15 @@
 #!/bin/bash
 
+set -e
+set -u
 spoke=$1
+
+if [ -z "$spoke" ]; then
+  echo "Usage: $0 <spoke cluster>"
+  echo "   <spoke cluster> is required"
+  echo "Example: $0 sno131"
+  exit 1
+fi
 
 if [ $(oc get managedcluster.cluster.open-cluster-management.io  |grep $spoke | wc -l) -eq 1 ]; then
   oc get secret -n ${spoke} ${spoke}-admin-kubeconfig -o jsonpath={.data.kubeconfig} |base64 -d > kubeconfig-${spoke}.yaml

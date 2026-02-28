@@ -1,5 +1,6 @@
 #!/bin/bash
-
+set -e
+set -u
 basedir="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 workspace=$(mktemp -d)
 upstream_repo_old=git@github.com:openshift-kni/cnf-features-deploy.git

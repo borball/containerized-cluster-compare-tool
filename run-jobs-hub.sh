@@ -1,5 +1,6 @@
 #!/bin/bash
-
+set -e
+set -u
 image="${IMAGE:-quay.io/bzhai/containerized-cluster-compare-tool}"
 NS=default
 
@@ -22,11 +23,11 @@ EOF
 }
 
 delete_sa(){
-  oc delete -n ${NS} sa cluster-compare-reporter-sa
+  oc delete -n ${NS} sa cluster-compare-reporter-sa --ignore-not-found=true
 }
 
 delete_cluster_role_binding(){
-  oc delete ClusterRoleBinding cluster-compare-reporter
+  oc delete ClusterRoleBinding cluster-compare-reporter --ignore-not-found=true
 }
 
 create_cluster_role_binding(){
@@ -44,11 +45,6 @@ subjects:
     name: cluster-compare-reporter-sa
     namespace: ${NS}
 EOF
-}
-
-delete_job(){
-  spoke=$1
-  oc delete job -n ${NS} cluster-compare-reporter-$spoke
 }
 
 create_job(){
@@ -84,11 +80,22 @@ EOF
 }
 
 delete_job(){
-  oc delete job -n ${NS} cluster-compare-reporter-$1
+  oc delete job -n ${NS} cluster-compare-reporter-$1 --ignore-not-found=true
 }
 
-if [[ ( $@ == "--help") ||  $@ == "-h" ]]
-then
+cleanup(){
+  # Remove any leftover reporter jobs (e.g. from failed create_job or oc wait)
+  oc get jobs -n "${NS}" -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' 2>/dev/null | while IFS= read -r name; do
+    if [[ "$name" == cluster-compare-reporter-* ]]; then
+      oc delete job "$name" -n "${NS}" --ignore-not-found=true || true
+    fi
+  done || true
+  delete_cluster_role_binding || true
+  delete_sa || true
+}
+trap cleanup EXIT
+
+if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
   usage
   exit
 fi
@@ -107,6 +114,3 @@ else
   create_job $1
   delete_job $1
 fi
-
-delete_cluster_role_binding
-delete_sa

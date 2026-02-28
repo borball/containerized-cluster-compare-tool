@@ -1,5 +1,6 @@
 #!/bin/bash
-
+set -e
+set -u
 image="${IMAGE:-quay.io/bzhai/containerized-cluster-compare-tool}"
 NS=default
 
@@ -14,11 +15,11 @@ EOF
 }
 
 delete_sa(){
-  oc delete -n ${NS} sa cluster-compare-reporter-sa
+  oc delete -n ${NS} sa cluster-compare-reporter-sa --ignore-not-found=true
 }
 
 delete_cluster_role_binding(){
-  oc delete ClusterRoleBinding cluster-compare-reporter
+  oc delete ClusterRoleBinding cluster-compare-reporter --ignore-not-found=true
 }
 
 create_cluster_role_binding(){
@@ -39,8 +40,15 @@ EOF
 }
 
 delete_job(){
-  oc delete job -n ${NS} cluster-compare-reporter
+  oc delete job -n ${NS} cluster-compare-reporter --ignore-not-found=true
 }
+
+cleanup(){
+  delete_job || true
+  delete_cluster_role_binding || true
+  delete_sa || true
+}
+trap cleanup EXIT
 
 create_job(){
   cat <<EOF | oc apply -f -
@@ -71,6 +79,3 @@ oc logs -n ${NS} $(oc get -n ${NS} po --selector job-name="cluster-compare-repor
 create_sa
 create_cluster_role_binding
 create_job
-delete_job
-delete_cluster_role_binding
-delete_sa

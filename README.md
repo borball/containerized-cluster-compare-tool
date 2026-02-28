@@ -1,6 +1,6 @@
-# Reference (DU) validation with kube-compare
+# Containerized Cluster Compare Tool
 
-Scripts and image to run the [kube-compare](https://github.com/openshift/kube-compare) tool (oc plugin) against [RAN reference configurations 4.18 or older](https://github.com/openshift-kni/cnf-features-deploy/tree/master/ztp/kube-compare-reference) and [RAN reference configurations 4.20 or later](https://github.com/openshift-kni/telco-reference/tree/main/telco-ran/configuration/kube-compare-reference)for DU validation.
+Scripts and image to run the [kube-compare](https://github.com/openshift/kube-compare) tool (oc plugin) against [RAN reference configurations 4.18 or older](https://github.com/openshift-kni/cnf-features-deploy/tree/master/ztp/kube-compare-reference) and [RAN reference configurations 4.20 or later](https://github.com/openshift-kni/telco-reference/tree/main/telco-ran/configuration/kube-compare-reference)for DU ZTP olicies validation.
 
 **Image:** `quay.io/bzhai/containerized-cluster-compare-tool:20260227`
 

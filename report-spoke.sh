@@ -1,5 +1,6 @@
 #!/bin/bash
-
+set -e
+set -u
 version=$(oc version -o yaml |grep openshiftVersion |cut -d: -f2|cut -d " " -f2 |cut -d "." -f1-2)
 
 metadata_rds="metadata-rds.yaml"
