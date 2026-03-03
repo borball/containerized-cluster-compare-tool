@@ -9,7 +9,15 @@ metadata_blueprint="metadata-blueprint.yaml"
 echo "------------------------------------------------------------------------------------------------------------------------"
 oc get clusterversion
 echo
-oc get policy -A -o=custom-columns=NS:.metadata.namespace,NAME:.metadata.name,"REMEDIATION ACTION":.spec.remediationAction,"COMPLIANCE STATE":.status.compliant,WAVE:.metadata.annotations."ran\.openshift\.io\/ztp-deploy-wave" --sort-by={.metadata.annotations."ran\.openshift\.io\/ztp-deploy-wave"}
+set +e
+output=$(oc get policy -A -o=custom-columns=NS:.metadata.namespace,NAME:.metadata.name,"REMEDIATION ACTION":.spec.remediationAction,"COMPLIANCE STATE":.status.compliant,WAVE:.metadata.annotations."ran\.openshift\.io\/ztp-deploy-wave" --sort-by={.metadata.annotations."ran\.openshift\.io\/ztp-deploy-wave"} 2>&1)
+ret=$?
+set -e
+if [[ $ret -eq 0 ]]; then
+  echo "$output"
+else
+  echo "Warning: policy CR not found (cluster may not be managed by a hub), skipping policy list."
+fi
 echo
 echo "---------------------- comparing cluster with kube-compare-reference/release-$version/$metadata_rds ----------------------"
 echo
